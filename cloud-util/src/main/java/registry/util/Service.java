@@ -89,7 +89,7 @@ public abstract class Service implements LifeCycle {
     protected void beforeStart() throws Exception {
     }
 
-    protected void validate() {
+    protected void validate()throws Exception  {
         Validators.validate(this);
     }
 
