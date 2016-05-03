@@ -39,7 +39,7 @@ public abstract class TimerService extends Service {
     @Override
     protected void doStart() throws Exception {
         super.doStart();
-        thread = new Thread(new ServiceThread(this,getInterval()){
+        thread = new Thread(new ServiceThread(this,getInitialDelay()){
             /**
              * 执行任务
              *
@@ -82,7 +82,7 @@ public abstract class TimerService extends Service {
         super.doStop();
     }
 
-    public long getInterval() {
+    protected long getInitialDelay() {
         return interval;
     }
 
@@ -123,7 +123,7 @@ public abstract class TimerService extends Service {
         return contextBuilder.createContext();
     }
 
-    public long getInterval(final Context context) {
+    protected long getInterval(final Context context) {
         if (context == null) {
             return interval;
         }
