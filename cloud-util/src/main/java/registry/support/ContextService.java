@@ -54,13 +54,35 @@ public abstract class ContextService extends LeaderService{
         });
         thread.setDaemon(true);
         thread.start();
-
     }
 
     @Override
     protected void onLostLeader() {
 
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mutex.lock();
+                try{
+                    if(leader.get()){
+                        return;
+                    }
+                    stopService();
+                }finally {
+                    mutex.unlock();
+                }
+            }
+        });
+
+        thread.setDaemon(true);
+        thread.start();
+
     }
+
+    /**
+     * 中断子服务
+     */
+    protected abstract void stopService();
 
     protected Context createContextWithRetry(){
 
