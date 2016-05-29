@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <properties>
+        <property name="dialect" value="mysql"/>
+    </properties>
+    <settings>
+        <!-- changes from the defaults -->
+        <setting name="lazyLoadingEnabled" value="false"/>
+    </settings>
+    <typeAliases>
+        <!--Model-->
+        <typeAlias type="com.jcloud.cap.data.model.Task" alias="Task"/>
+        <typeAlias type="com.jcloud.cap.data.model.UserLog" alias="UserLog"/>
+        <typeAlias type="com.jcloud.cap.data.model.User" alias="User"/>
+        <typeAlias type="com.jcloud.cap.data.model.UserAccount" alias="UserAccount"/>
+        <typeAlias type="com.jcloud.cap.data.model.Cluster" alias="Cluster"/>
+        <typeAlias type="com.jcloud.cap.data.model.ClusterUser" alias="ClusterUser"/>
+        <typeAlias type="com.jcloud.cap.data.model.Router" alias="Router"/>
+        <typeAlias type="com.jcloud.cap.data.model.ConfigInfo" alias="ConfigInfo"/>
+        <typeAlias type="com.jcloud.cap.data.model.Executor" alias="Executor"/>
+        <typeAlias type="com.jcloud.cap.data.model.Group" alias="Group"/>
+        <typeAlias type="com.jcloud.cap.data.model.GroupPermission" alias="GroupPermission"/>
+        <typeAlias type="com.jcloud.cap.data.model.GroupUser" alias="GroupUser"/>
+        <typeAlias type="com.jcloud.cap.data.model.Permission" alias="Permission"/>
+        <typeAlias type="com.jcloud.cap.data.model.UserPermission" alias="UserPermission"/>
+        <typeAlias type="com.jcloud.cap.data.model.PermissionLog" alias="PermissionLog"/>
+        <typeAlias type="com.jcloud.cap.data.model.UserAccessKey" alias="UserAccessKey"/>
+        <typeAlias type="com.jcloud.cap.data.model.Flavor" alias="Flavor"/>
+        <typeAlias type="com.jcloud.cap.data.model.UserQuota" alias="UserQuota"/>
+        <typeAlias type="com.jcloud.cap.data.model.Order" alias="Order"/>
+
+
+        <typeAlias type="com.jcloud.cap.data.model.QUserQuota" alias="QUserQuota"/>
+        <typeAlias type="com.jcloud.cap.data.model.QOrder" alias="QOrder"/>
+        <typeAlias type="com.jcloud.cap.data.model.QFlavor" alias="QFlavor"/>
+        <typeAlias type="com.jcloud.cap.data.model.QGroupPermission" alias="QGroupPermission"/>
+        <typeAlias type="com.jcloud.cap.data.model.QUserPermission" alias="QUserPermission"/>
+        <typeAlias type="com.jcloud.cap.data.model.QUserAccessKey" alias="QUserAccessKey"/>
+        <typeAlias type="com.jcloud.cap.data.model.QGroupUser" alias="QGroupUser"/>
+
+        <typeAlias type="com.jcloud.cap.data.model.Transition" alias="Transition"/>
+        <typeAlias type="com.jcloud.cap.data.model.Page" alias="Page"/>
+        <typeAlias type="com.jcloud.cap.data.model.QKeyword" alias="QKeyword"/>
+        <typeAlias type="com.jcloud.cap.data.model.QPageQuery" alias="QPageQuery"/>
+    </typeAliases>
+
+    <plugins>
+        <plugin interceptor="com.jcloud.cap.data.mybatis.interceptor.PageStatementInterceptor"/>
+        <plugin interceptor="com.jcloud.cap.data.mybatis.interceptor.PageResultInterceptor"/>
+    </plugins>
+
+</configuration>

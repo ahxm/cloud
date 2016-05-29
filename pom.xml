@@ -733,5 +733,6 @@
       <module>cloud-util</module>
       <module>cloud-core</module>
       <module>cloud-datasource</module>
+      <module>cloud-mybatis</module>
   </modules>
 </project>
