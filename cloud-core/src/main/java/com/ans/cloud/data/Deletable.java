@@ -1,7 +1,8 @@
 package com.ans.cloud.data;
 
-import com.jcloud.cap.data.exception.BusinessException;
-import com.jcloud.cap.data.exception.RepositoryException;
+
+import com.ans.cloud.data.exception.BusinessException;
+import com.ans.cloud.data.exception.RepositoryException;
 
 /**
  * 删除

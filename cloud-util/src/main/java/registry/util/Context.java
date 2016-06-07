@@ -15,7 +15,7 @@ public class Context {
     public Context() {
     }
 
-    public Context(ConcurrentHashMap<String, Object> parameters) {
+    public Context(Map<String, Object> parameters) {
         if(parameters !=null){
             this.parameters.putAll(parameters);
         }

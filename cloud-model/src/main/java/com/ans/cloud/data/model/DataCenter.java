@@ -5,17 +5,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by anzhen on 2016/5/29.
+ * 数据中心
  */
-public class DataCenter extends BaseModel{
-
+public class DataCenter extends BaseModel {
     private static Pattern P_RANGE1 = Pattern.compile("^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$");
     private static Pattern P_RANGE2 = Pattern.compile("^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\-([0-9]{1,3})$");
     private static Pattern P_RANGE3 = Pattern.compile(
             "^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\-([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})"
                     + "\\.([0-9]{1,3})$");
     private static Pattern P_RANGE4 = Pattern.compile("^([0-9]{1,3})\\.([0-9]{1,3})\\.\\*$");
-
     // 代码
     private String code;
     // 名称
@@ -176,6 +174,5 @@ public class DataCenter extends BaseModel{
         ip[3] = Long.parseLong(p4);
         return (ip[0] << 24) + (ip[1] << 16) + (ip[2] << 8) + ip[3];
     }
-
 
 }

@@ -1,6 +1,7 @@
 package com.ans.cloud.data;
 
-import com.jcloud.cap.data.exception.RepositoryException;
+
+import com.ans.cloud.data.exception.RepositoryException;
 
 /**
  * 启用禁用管理

@@ -1,9 +1,10 @@
 package com.ans.cloud.data.model;
 
 /**
- * Created by anzhen on 2016/6/7.
+ * Created by anzhen on 2016/1/24.
+ * 服务代码
  */
-public  enum  Resource {
+public enum Resource {
     /**
      * 云主机
      */
@@ -93,74 +94,16 @@ public  enum  Resource {
         this.index = index;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getFee() {
-        return fee;
-    }
-
-    public void setFee(String fee) {
-        this.fee = fee;
-    }
-
-    public String getModule() {
-        return module;
-    }
-
-    public void setModule(String module) {
-        this.module = module;
-    }
-
-    public String getCluster() {
-        return cluster;
-    }
-
-    public void setCluster(String cluster) {
-        this.cluster = cluster;
-    }
-
-    public int getQuota() {
-        return quota;
-    }
-
-    public void setQuota(int quota) {
-        this.quota = quota;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public static Resource of(final int id){
+    /**
+     * 根据ID查找资源
+     *
+     * @param id
+     * @return 资源
+     */
+    public static Resource of(final int id) {
         Resource[] resources = Resource.values();
-        for (Resource resource:resources){
-            if(resource.getId() == id){
+        for (Resource resource : resources) {
+            if (resource.getId() == id) {
                 return resource;
             }
         }
@@ -216,7 +159,39 @@ public  enum  Resource {
         return count;
     }
 
-    public static class Constants{
+    public int getIndex() {
+        return index;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getFee() {
+        return fee;
+    }
+
+    public String getModule() {
+        return module;
+    }
+
+    public String getCluster() {
+        return cluster;
+    }
+
+    public int getQuota() {
+        return quota;
+    }
+
+    public static class Constants {
         public static final String CODE_SERVER = "server";
         public static final String CODE_IMAGE = "image";
         public static final String CODE_VOLUME = "volume";
@@ -249,5 +224,4 @@ public  enum  Resource {
         public static final String CODE_DB_SNAPSHOT_NAME = "云数据库备份";
         public static final String CODE_OTHER_NAME = "其他";
     }
-
 }
