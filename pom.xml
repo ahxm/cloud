@@ -734,5 +734,8 @@
       <module>cloud-core</module>
       <module>cloud-datasource</module>
       <module>cloud-mybatis</module>
+      <module>cloud-model</module>
+      <module>cloud-server</module>
+      <module>cloud-api</module>
   </modules>
 </project>
