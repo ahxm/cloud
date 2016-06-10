@@ -737,5 +737,6 @@
       <module>cloud-model</module>
       <module>cloud-server</module>
       <module>cloud-api</module>
+      <module>cloud-client</module>
   </modules>
 </project>
