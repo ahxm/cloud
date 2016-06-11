@@ -10,6 +10,6 @@ import java.rmi.ServerException;
  */
 public interface Reader {
 
-    public Response read() throws ClientException,ServerException;
+    public Response read() throws ClientException, ServerException, com.ans.cloud.client.exception.ServerException;
 
 }

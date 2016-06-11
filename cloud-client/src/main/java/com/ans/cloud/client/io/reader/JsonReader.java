@@ -3,16 +3,19 @@ package com.ans.cloud.client.io.reader;
 import com.ans.cloud.client.exception.ClientException;
 import com.ans.cloud.client.exception.ServerException;
 import com.ans.cloud.client.http.HttpResponse;
+import com.ans.cloud.model.DateAdapter;
 import com.ans.cloud.model.Response;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -214,6 +217,198 @@ public class JsonReader implements Reader {
         Type fc;
         ParameterizedType pt;
 
+
+        for (int i = 0; i<chars.length;i++){
+
+            pre = cur;
+            cur = chars[i];
+            if(isAlphabet(cur)){
+                pstart = pstart == -1? i:pstart;
+                pend = i;
+                if(pend == pstart && pre!=0 && pre != '.'||pend>pstart && !isAlphabet(pre)){
+                    return false;
+                }
+            }else if(isDigit(cur)){
+                iend = i;
+                if(!isDigit(pre) && pre !='['){
+                    return false;
+                }
+            }else if(cur == '.'){
+                if(isAlphabet(pre)){
+                    property = new String(chars, pstart, pend - pstart + 1);
+                    descriptor = getPropertyDescriptor(obj.getClass(),property);
+                    if(descriptor == null){
+                        return false;
+                    }
+                    type = descriptor.getPropertyType();
+                    if(isPrimitive(type) || isList(type)){
+                        return false;
+                    }
+                    fv  = descriptor.getReadMethod().invoke(obj);
+                    if(fv == null){
+                        fv = type.newInstance();
+                        descriptor.getWriteMethod().invoke(obj,fv);
+                    }
+                    obj = fv;
+                    pstart = i+1;
+                    pend = -1;
+                    istart = iend = -1;
+                }else if(pre == ']'){
+
+                }else {
+                    return false;
+                }
+            }else if(cur == '['){
+                if(!isAlphabet(pre)){
+                    return false;
+                }
+                istart = i+1;
+                iend = -1;
+            }else if(cur == ']'){
+                if(!isDigit(pre)){
+                    return false;
+                }
+                index = Integer.valueOf(new String(chars, istart, iend - istart + 1));
+                property = new String(chars, pstart, pend - pstart + 1);
+                istart = iend = -1;
+                pend = pstart = -1;
+                clazz = obj.getClass();
+                descriptor = getPropertyDescriptor(clazz, property);
+                if (descriptor == null) {
+                    return false;
+                }
+                type = descriptor.getPropertyType();
+                if (!isList(type)) {
+                    return false;
+                }
+                fc = descriptor.getReadMethod().getGenericReturnType();
+                if (fc == null) {
+                    return false;
+                }
+                if (fc instanceof ParameterizedType) {
+                    // 如果是泛型参数的类型
+                    pt = (ParameterizedType) fc;
+                    //【4】 得到泛型里的class类型对象。
+                    clazz = (Class) pt.getActualTypeArguments()[0];
+                }
+                fvs = (List<Object>) descriptor.getReadMethod().invoke(obj);
+                if (fvs == null) {
+                    fvs = new ArrayList();
+                    descriptor.getWriteMethod().invoke(obj, fvs);
+                }
+                size = index + 1 - fvs.size();
+                for (int j = 0; j < size; j++) {
+                    if (isPrimitive(clazz)) {
+                        fvs.add(null);
+                    } else {
+                        fvs.add(clazz.newInstance());
+                    }
+                }
+                obj = fvs.get(index);
+                // 基本类型，则后续不能再嵌套
+                if (isPrimitive(clazz)) {
+                    if (i < chars.length - 1) {
+                        return false;
+                    }
+                    obj = convert(clazz, value);
+                    fvs.set(index, obj);
+                }
+            }
+        }
+        if (iend != -1 || pend < pstart) {
+            // 括号没有完成就结束了，或者.结束
+            return false;
+        }
+        if (pend > -1 && pend >= pstart) {
+            property = new String(chars, pstart, pend - pstart + 1);
+            descriptor = getPropertyDescriptor(obj.getClass(), property);
+            if (descriptor == null) {
+                // 忽略掉没有的属性
+                return true;
+            }
+            descriptor.getWriteMethod().invoke(obj, convert(descriptor.getPropertyType(), value));
+        }
+        return true;
+
+    }
+
+    private Object convert(final Class<?> type,final String value) throws Exception{
+        Object param;
+        param = null;
+        if (type == int.class) {
+            param = Integer.valueOf(value);
+        } else if (type == long.class) {
+            param = Long.valueOf(value);
+        } else if (type == double.class) {
+            param = Double.valueOf(value);
+        } else if (type == short.class) {
+            param = Short.valueOf(value);
+        } else if (type == byte.class) {
+            param = Byte.valueOf(value);
+        } else if (type == boolean.class) {
+            param = Boolean.valueOf(value);
+        } else if (type == Integer.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Integer
+                    .valueOf(value);
+        } else if (type == Long.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Long.valueOf(value);
+        } else if (type == Double.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Double.valueOf(value);
+        } else if (type == Short.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Short.valueOf(value);
+        } else if (type == Byte.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Byte.valueOf(value);
+        } else if (type == Boolean.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : Boolean
+                    .valueOf(value);
+        } else if (type == String.class) {
+            param = NULL.equals(value) ? null : value;
+        } else if (type == Date.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : DateAdapter.get()
+                    .parse(value);
+        } else if (type == BigDecimal.class) {
+            param = value == null || value.isEmpty() || NULL.equalsIgnoreCase(value) ? null : new BigDecimal(value);
+        }
+        return param;
+    }
+
+    private boolean isPrimitive (final Class<?> clazz){
+        return clazz == int.class || clazz == long.class || clazz == double.class || clazz == short.class ||
+                clazz == byte.class || clazz == boolean.class || clazz == Integer.TYPE || clazz == Long.TYPE ||
+                clazz == Double.TYPE || clazz == Short.TYPE || clazz == Byte.TYPE || clazz == Boolean.TYPE ||
+                clazz == String.class || clazz == Date.class;
+    }
+
+    private PropertyDescriptor getPropertyDescriptor(final Class<?> clazz,final String name) throws IntrospectionException{
+
+        ConcurrentMap<String,PropertyDescriptor> map = fields.get(clazz);
+        if(map == null){
+            map = new ConcurrentHashMap<String, PropertyDescriptor>();
+            BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+            for (PropertyDescriptor descriptor : descriptors){
+                if(descriptor.getWriteMethod() !=null){
+                    map.put(descriptor.getName(),descriptor);
+                }
+            }
+            ConcurrentMap<String,PropertyDescriptor> old = fields.putIfAbsent(clazz,map);
+            if(old != null){
+                map = old;
+            }
+
+        }
+
+        return map.get(name);
+
+    }
+
+
+    private boolean isDigit(final char ch){
+        return ch >='0' && ch<='9';
+    }
+
+    private boolean isAlphabet(final char ch){
+        return ch >= 'A' && ch<='Z' || ch >= 'a' && ch<='z';
     }
 
     private void skipWhiteSpace(){
