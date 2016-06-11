@@ -9,6 +9,10 @@ public class ClientException extends Exception {
 
     public ClientException(){}
 
+    public ClientException(boolean isRetry) {
+        this.isRetry = isRetry;
+    }
+
     public ClientException(String message,boolean isRetry){
         super(message);
         this.isRetry = isRetry;

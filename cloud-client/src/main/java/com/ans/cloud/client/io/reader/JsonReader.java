@@ -1,16 +1,17 @@
 package com.ans.cloud.client.io.reader;
 
 import com.ans.cloud.client.exception.ClientException;
+import com.ans.cloud.client.exception.ServerException;
 import com.ans.cloud.client.http.HttpResponse;
 import com.ans.cloud.model.Response;
-import com.sun.corba.se.spi.activation.Server;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 
 import java.beans.PropertyDescriptor;
-import java.rmi.ServerException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -61,9 +62,38 @@ public class JsonReader implements Reader {
         return read(response.getContent(), response.getType(), "");
     }
 
-    protected Response read(String response,Class type,String root) throws ClientException,ServerException{
+    protected Response read(String response,Class type,String root) throws ClientException,ServerException {
 
         Map<String,String> proValues = read(response,root);
+        String status = proValues.get(CODE);
+        String requestId = proValues.get(REQUEST_ID);
+        if(requestId !=null && !requestId.trim().isEmpty()){
+            if(status!=null){
+            throw new ServerException(proValues.get(REQUEST_ID),proValues.get(CODE),proValues.get(MESSAGE));
+            }else{
+                try {
+                    Response responseObj = (Response)type.newInstance();
+                    for (Map.Entry<String,String> proValue : proValues.entrySet()){
+                        update(responseObj,proValue.getKey(),proValue.getValue());
+                    }
+                    return responseObj;
+                } catch (InstantiationException e) {
+                    throw new ClientException(String.format(
+                            "Create instance[%s] error, has not a non-arg constructor?", type.getName()), e);
+                } catch (IllegalAccessException e) {
+                    throw new ClientException(String.format(
+                            "Create instance[%s] error, The non-arg constructor is not public?", type.getName()),
+                            e);
+                } catch (Exception e) {
+                    throw new ClientException(String.format(
+                            "Create instance[%s] error", type.getName()), e);
+                }
+            }
+        }else{
+            // 没有接收到服务端的正常响应(网络节点等原因),抛异常重试
+            throw new ClientException(String.format("Response[%s] is error", response), true);
+        }
+
 
     }
 
@@ -159,6 +189,33 @@ public class JsonReader implements Reader {
         return token;
     }
 
+    private boolean isList(final Class<?> clazz){
+        return clazz == List.class;
+    }
+
+    public boolean update(final Object target,final String name,final String value) throws Exception{
+
+        Object obj = target;
+        char[] chars= name.toCharArray();
+        String property;
+        int index;
+        PropertyDescriptor descriptor;
+        Class<?> type;
+        int pstart = -1;
+        int pend = -1;
+        int istart = -1;
+        int iend = -1;
+        int size = 0;
+        char cur = 0;
+        char pre;
+        Object fv;
+        List<Object> fvs;
+        Class<?> clazz;
+        Type fc;
+        ParameterizedType pt;
+
+    }
+
     private void skipWhiteSpace(){
         while (Character.isWhitespace(c)){
             nextChar();
@@ -208,9 +265,34 @@ public class JsonReader implements Reader {
 
     private void processList(String baseKey){
 
+        Object value = readJson(baseKey);
+        int index = 0;
+        while(token!=ARRAY_END_TOKEN){
+            String key = trimFromLast(baseKey,".")+"["+(index++)+"]";
+            map.put(key,String.valueOf(value));
+            if(readJson(baseKey) == COMMA_TOKEN){
+                value = readJson(baseKey);
+            }
+        }
+        map.put(trimFromLast(baseKey,".")+".Length",String.valueOf(index));
     }
 
     private void processArray(String baseKey){
+
+        int index = 0;
+        String preKey = trimFromLast(baseKey,".");
+        String key = preKey+"["+index+"]";
+        Object  value= readJson(key);
+        while (token!=ARRAY_END_TOKEN){
+            map.put(preKey+".Length",String.valueOf(index+1));
+            if(value instanceof String){
+                map.put(key,String.valueOf(value));
+            }
+            if(response == COMMA_TOKEN){
+                key = preKey+"["+(++index)+"]";
+                value = readJson(key);
+            }
+        }
 
     }
 
@@ -236,6 +318,29 @@ public class JsonReader implements Reader {
 
     private Object processNumber(){
 
+        stringBuffer.setLength(0);
+        if('-' == c){
+            addChar();
+        }
+        addDigits();
+        if('.' == c){
+            addChar();
+            addDigits();
+        }
+        if('e' == c || 'E' == c){
+            addChar();
+            if('+' == c || '-' == c){
+                addChar();
+            }
+            addDigits();
+        }
+        return stringBuffer.toString();
+    }
+
+    private void addDigits(){
+        while (Character.isDigit(c)){
+            addChar();
+        }
     }
 
     private void addChar(char ch){
